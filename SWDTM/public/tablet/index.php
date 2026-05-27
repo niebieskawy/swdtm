@@ -441,14 +441,13 @@ $banner = 'Brak komunikatów';
 
                 <div class="tablet-tab" role="tab" tabindex="0" data-tab="ekd" aria-selected="false">
                     <svg class="tab-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path d="M4 7h10a3 3 0 0 1 3 3v7H7a3 3 0 0 1-3-3V7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                        <path d="M17 11h2.2a1.8 1.8 0 0 1 1.6.9l1 1.7a2 2 0 0 1 .2.9V16a1 1 0 0 1-1 1h-1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M7 17a2 2 0 1 0 4 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        <path d="M17 17a2 2 0 1 0 4 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        <path d="M8.5 12h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        <path d="M9.5 11v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6.5 2H20v20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6.5 2H5a2 2 0 0 0-2 2v13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M9 6h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M9 10h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                     </svg>
-                    <div class="tab-label">EKD</div>
+                    <div class="tab-label">Dokumentacja</div>
                 </div>
             </div>
         </div>
@@ -537,6 +536,7 @@ $banner = 'Brak komunikatów';
                     <?php
                         $orderNumber = '—';
                         $from = '—';
+                        $to = '—';
                         $phone = '—';
                         if ($activeOrder) {
                             $num = (string)($activeOrder['order_seq'] ?? '');
@@ -677,25 +677,19 @@ $banner = 'Brak komunikatów';
             <section class="tablet-view" data-view="nav">
                 <div class="tablet-card">
                     <div style="font-weight:950;font-size:20px;letter-spacing:.2px">Nawigacja</div>
-                    <div class="tablet-muted" style="margin-top:8px">Uruchom nawigację w Google Maps. Możesz wrócić do SWDTM przyciskiem poniżej lub klawiszem cofania.</div>
+                    <div class="tablet-muted" style="margin-top:8px">Uruchom nawigację.</div>
 
                     <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
                         <button class="btn-primary" type="button" data-nav-open="from" <?= $hasActiveOrder ? '' : 'disabled' ?>>Nawiguj: Skąd</button>
                         <button class="btn-primary" type="button" data-nav-open="to" <?= $hasActiveOrder ? '' : 'disabled' ?>>Nawiguj: Dokąd</button>
-                    </div>
-
-                    <div class="tablet-muted" style="margin-top:10px">
-                        <div style="font-weight:900;margin-bottom:6px">Aktualne adresy</div>
-                        <div><span style="font-weight:900">Skąd:</span> <span data-nav-from><?= htmlspecialchars($hasActiveOrder ? $from : '—', ENT_QUOTES, 'UTF-8') ?></span></div>
-                        <div style="margin-top:4px"><span style="font-weight:900">Dokąd:</span> <span data-nav-to><?= htmlspecialchars($hasActiveOrder ? $to : '—', ENT_QUOTES, 'UTF-8') ?></span></div>
                     </div>
                 </div>
             </section>
 
             <section class="tablet-view" data-view="ekd">
                 <div class="tablet-card">
-                    <div style="font-weight:950;font-size:20px;letter-spacing:.2px">EKD</div>
-                    <div class="tablet-muted" style="margin-top:8px">Tu będzie Elektroniczna Karta Drogowa.</div>
+                    <div style="font-weight:950;font-size:20px;letter-spacing:.2px">Dokumentacja</div>
+                    <div class="tablet-muted" style="margin-top:8px">Tu będzie dokumentacja zespołu.</div>
                 </div>
             </section>
         </main>
@@ -728,7 +722,9 @@ $banner = 'Brak komunikatów';
             <div class="order-form" style="grid-template-columns:1fr">
                 <div class="field">
                     <span class="label">Adres</span>
-                    <div class="input" style="height:auto;padding:10px 12px;white-space:pre-wrap" data-nav-address>—</div>
+                    <div class="input" style="height:auto;padding:0;overflow:hidden" data-nav-frame-wrap>
+                        <iframe title="Google Maps" data-nav-frame src="about:blank" style="display:block;width:100%;height:360px;border:0" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+                    </div>
                 </div>
             </div>
 
@@ -1225,6 +1221,7 @@ $banner = 'Brak komunikatów';
             window.SWDTM.tabletHomeUrl = <?= json_encode(url('/tablet'), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
             window.SWDTM.activeOrderFromText = <?= json_encode($hasActiveOrder ? $from : '', JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
             window.SWDTM.activeOrderToText = <?= json_encode($hasActiveOrder ? $to : '', JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+            window.SWDTM.teamCode = <?= json_encode($teamCode, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
 
             try {
                 if (window.NodeList && !NodeList.prototype.forEach) {
@@ -1254,28 +1251,36 @@ $banner = 'Brak komunikatów';
             function onTap(el, handler) {
                 if (!el || typeof handler !== 'function') return;
 
-                var lastTapTs = 0;
+                var lastFireTs = 0;
+                var lastPointerTs = 0;
                 function fire(e) {
                     var now = Date.now();
-                    if (now - lastTapTs < 450) return;
-                    lastTapTs = now;
+                    if (now - lastFireTs < 160) return;
+                    lastFireTs = now;
+                    try { if (e && typeof e.preventDefault === 'function') e.preventDefault(); } catch (e2) {}
+                    try { if (e && typeof e.stopPropagation === 'function') e.stopPropagation(); } catch (e3) {}
+                    try { if (e && typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation(); } catch (e4) {}
                     handler(e);
                 }
 
                 if (window.PointerEvent) {
                     el.addEventListener('pointerup', function (e) {
                         if (e && e.pointerType === 'mouse') return;
+                        lastPointerTs = Date.now();
                         fire(e);
-                    });
+                    }, { passive: false });
                 } else {
                     el.addEventListener('touchend', function (e) {
+                        lastPointerTs = Date.now();
                         fire(e);
-                    }, false);
+                    }, { passive: false });
                 }
 
                 el.addEventListener('click', function (e) {
+                    var now = Date.now();
+                    if (now - lastPointerTs < 700) return;
                     fire(e);
-                });
+                }, false);
             }
 
             function buildGoogleMapsUrl(addressText) {
@@ -1284,17 +1289,111 @@ $banner = 'Brak komunikatów';
                 return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(q) + '&travelmode=driving';
             }
 
+            function buildGoogleNavigationSchemeUrl(addressText) {
+                var q = String(addressText || '').trim();
+                if (!q) return '';
+                return 'google.navigation:q=' + encodeURIComponent(q) + '&mode=d';
+            }
+
+            function buildGoogleMapsIntentUrl(addressText) {
+                var q = String(addressText || '').trim();
+                if (!q) return '';
+                return 'intent://maps.google.com/maps?daddr=' + encodeURIComponent(q) + '&dirflg=d#Intent;scheme=https;package=com.google.android.apps.maps;end';
+            }
+
+            function openExternalNavigation(addressText) {
+                try {
+                    if (window.Android && typeof window.Android.openNavigation === 'function') {
+                        window.Android.openNavigation(String(addressText || ''));
+                        return;
+                    }
+                } catch (e) {}
+
+                var httpsUrl = buildGoogleMapsUrl(addressText);
+                if (!httpsUrl) return;
+
+                var navUrl = buildGoogleNavigationSchemeUrl(addressText);
+                var intentUrl = buildGoogleMapsIntentUrl(addressText);
+
+                var triedFallback = false;
+                function fallback() {
+                    if (triedFallback) return;
+                    triedFallback = true;
+                    try { window.location.href = httpsUrl; } catch (e) {}
+                }
+
+                try {
+                    if (intentUrl) window.location.href = intentUrl;
+                } catch (e) {}
+
+                try {
+                    if (navUrl) window.location.href = navUrl;
+                } catch (e2) {}
+
+                setTimeout(function () { fallback(); }, 700);
+            }
+
+            function buildGoogleMapsEmbedUrl(addressText) {
+                var q = String(addressText || '').trim();
+                if (!q) return '';
+                return 'https://www.google.com/maps?q=' + encodeURIComponent(q) + '&output=embed';
+            }
+
+            function setNavAvailability(hasOrder) {
+                try {
+                    var on = hasOrder === true;
+                    document.querySelectorAll('[data-nav-open]').forEach(function (btn) {
+                        if (!(btn instanceof HTMLElement)) return;
+                        if (on) {
+                            btn.classList.remove('is-disabled');
+                            btn.removeAttribute('disabled');
+                            btn.style.opacity = '';
+                            btn.style.pointerEvents = '';
+                            btn.setAttribute('aria-disabled', 'false');
+                        } else {
+                            btn.classList.add('is-disabled');
+                            btn.setAttribute('disabled', 'disabled');
+                            btn.style.opacity = '.45';
+                            btn.style.pointerEvents = 'none';
+                            btn.setAttribute('aria-disabled', 'true');
+                        }
+                    });
+                } catch (e) {}
+            }
+
             function openNavModal(side) {
                 var overlay = document.querySelector('[data-nav-overlay]');
                 if (!overlay) return;
-                var addrBox = overlay.querySelector('[data-nav-address]');
+                var frame = overlay.querySelector('[data-nav-frame]');
                 var openLink = overlay.querySelector('[data-nav-open-maps]');
 
-                var addr = '';
-                if (String(side) === 'from') addr = (window.SWDTM && window.SWDTM.activeOrderFromText) ? String(window.SWDTM.activeOrderFromText) : '';
-                if (String(side) === 'to') addr = (window.SWDTM && window.SWDTM.activeOrderToText) ? String(window.SWDTM.activeOrderToText) : '';
+                function readUiAddress(sel) {
+                    try {
+                        var el = document.querySelector(sel);
+                        var t = el ? String(el.textContent || '').trim() : '';
+                        if (!t || t === '—') return '';
+                        return t;
+                    } catch (e) {
+                        return '';
+                    }
+                }
 
-                if (addrBox) addrBox.textContent = addr ? addr : '—';
+                var addr = '';
+                if (String(side) === 'from') {
+                    addr = readUiAddress('[data-active-from]') || ((window.SWDTM && window.SWDTM.activeOrderFromText) ? String(window.SWDTM.activeOrderFromText) : '');
+                }
+                if (String(side) === 'to') {
+                    addr = readUiAddress('[data-active-to]') || ((window.SWDTM && window.SWDTM.activeOrderToText) ? String(window.SWDTM.activeOrderToText) : '');
+                }
+
+                try {
+                    overlay.setAttribute('data-nav-current-address', addr ? String(addr) : '');
+                } catch (e) {}
+
+                if (frame) {
+                    var eu = buildGoogleMapsEmbedUrl(addr);
+                    frame.setAttribute('src', eu ? eu : 'about:blank');
+                }
                 if (openLink) {
                     var u = buildGoogleMapsUrl(addr);
                     openLink.setAttribute('href', u ? u : '#');
@@ -1307,7 +1406,26 @@ $banner = 'Brak komunikatów';
             document.querySelectorAll('[data-nav-open]').forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     if (btn.disabled) return;
-                    openNavModal(btn.getAttribute('data-nav-open'));
+                    var side = btn.getAttribute('data-nav-open');
+                    var addr = '';
+                    try {
+                        if (String(side) === 'from') {
+                            addr = (function () {
+                                var el = document.querySelector('[data-active-from]');
+                                var t = el ? String(el.textContent || '').trim() : '';
+                                return (!t || t === '—') ? '' : t;
+                            })() || ((window.SWDTM && window.SWDTM.activeOrderFromText) ? String(window.SWDTM.activeOrderFromText) : '');
+                        }
+                        if (String(side) === 'to') {
+                            addr = (function () {
+                                var el = document.querySelector('[data-active-to]');
+                                var t = el ? String(el.textContent || '').trim() : '';
+                                return (!t || t === '—') ? '' : t;
+                            })() || ((window.SWDTM && window.SWDTM.activeOrderToText) ? String(window.SWDTM.activeOrderToText) : '');
+                        }
+                    } catch (e) { addr = ''; }
+
+                    openExternalNavigation(addr);
                 });
             });
 
@@ -1316,15 +1434,42 @@ $banner = 'Brak komunikatów';
                 if (!overlay) return;
                 function close() { overlay.classList.remove('is-open'); }
 
+                function clearFrame() {
+                    try {
+                        var frame = overlay.querySelector('[data-nav-frame]');
+                        if (frame) frame.setAttribute('src', 'about:blank');
+                    } catch (e) {}
+                }
+
+                var openLink = overlay.querySelector('[data-nav-open-maps]');
+                if (openLink) {
+                    openLink.addEventListener('click', function (e) {
+                        var href = String(openLink.getAttribute('href') || '').trim();
+                        if (!href || href === '#') {
+                            if (e) e.preventDefault();
+                            return;
+                        }
+                        try { if (e) e.preventDefault(); } catch (ex) {}
+                        try { close(); } catch (ex2) {}
+                        try { clearFrame(); } catch (ex4) {}
+                        try { window.location.href = href; } catch (ex3) {}
+                    });
+                }
+
                 overlay.querySelectorAll('[data-nav-cancel]').forEach(function (b) {
-                    b.addEventListener('click', function () { close(); });
+                    b.addEventListener('click', function () {
+                        close();
+                        clearFrame();
+                    });
                 });
 
                 var copyBtn = overlay.querySelector('[data-nav-copy]');
                 if (copyBtn) {
                     copyBtn.addEventListener('click', function () {
-                        var t = overlay.querySelector('[data-nav-address]');
-                        var txt = t ? String(t.textContent || '').trim() : '';
+                        var txt = '';
+                        try {
+                            txt = String(overlay.getAttribute('data-nav-current-address') || '').trim();
+                        } catch (e) { txt = ''; }
                         if (!txt || txt === '—') return;
                         try {
                             if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1411,6 +1556,17 @@ $banner = 'Brak komunikatów';
                     e.preventDefault();
                     var overlay = document.querySelector('[data-tablet-logout-overlay]');
                     if (overlay) overlay.classList.add('is-open');
+                });
+            }
+
+            var logoutConfirm = document.querySelector('[href*="/logout"]');
+            if (logoutConfirm) {
+                logoutConfirm.addEventListener('click', function() {
+                    try {
+                        if (window.Android && typeof window.Android.stopLocationTracking === 'function') {
+                            window.Android.stopLocationTracking();
+                        }
+                    } catch (e) {}
                 });
             }
 
@@ -1538,7 +1694,7 @@ $banner = 'Brak komunikatów';
             if (statusOverlay) {
                 var titleEl = statusOverlay.querySelector('[data-status-confirm-title]');
                 var textEl = statusOverlay.querySelector('[data-status-confirm-text]');
-                var cancelEl = statusOverlay.querySelector('[data-status-confirm-cancel]');
+                var cancelEls = statusOverlay.querySelectorAll('[data-status-confirm-cancel]');
                 var okEl = statusOverlay.querySelector('[data-status-confirm-ok]');
                 var formEl = statusOverlay.querySelector('[data-status-confirm-form]');
                 var actionEl = statusOverlay.querySelector('[data-status-confirm-action]');
@@ -1584,6 +1740,15 @@ $banner = 'Brak komunikatów';
                     statusOverlay.classList.add('is-open');
                 }
 
+                function closeStatusConfirm() {
+                    if (!statusOverlay.classList.contains('is-open')) return;
+                    statusOverlay.setAttribute('data-closing', '1');
+                    window.setTimeout(function () {
+                        statusOverlay.classList.remove('is-open');
+                        statusOverlay.removeAttribute('data-closing');
+                    }, 420);
+                }
+
                 applyOrderStatusDisabled();
 
                 document.querySelectorAll('[data-status-pick]').forEach(function (btn) {
@@ -1618,9 +1783,11 @@ $banner = 'Brak komunikatów';
                     });
                 }
 
-                if (cancelEl) {
-                    cancelEl.addEventListener('click', function () {
-                        statusOverlay.classList.remove('is-open');
+                if (cancelEls && cancelEls.length) {
+                    cancelEls.forEach(function (btn) {
+                        onTap(btn, function () {
+                            closeStatusConfirm();
+                        });
                     });
                 }
 
@@ -1665,7 +1832,7 @@ $banner = 'Brak komunikatów';
                         .then(function (r) { return r && r.ok === true ? r.json() : null; })
                         .then(function (s) {
                             if (!s || s.ok !== true) return;
-                            statusOverlay.classList.remove('is-open');
+                            closeStatusConfirm();
                             window.location.reload();
                         })
                         .catch(function () {});
@@ -1674,14 +1841,14 @@ $banner = 'Brak komunikatów';
 
                 statusOverlay.addEventListener('click', function (e) {
                     if (e.target === statusOverlay && statusOverlay.getAttribute('data-outside-close') === '1') {
-                        statusOverlay.classList.remove('is-open');
+                        closeStatusConfirm();
                     }
                 });
 
                 document.addEventListener('keydown', function (e) {
                     if (e.key !== 'Escape') return;
                     if (statusOverlay.classList.contains('is-open') && statusOverlay.getAttribute('data-esc-close') === '1') {
-                        statusOverlay.classList.remove('is-open');
+                        closeStatusConfirm();
                     }
                 });
             }
@@ -3054,6 +3221,7 @@ $banner = 'Brak komunikatów';
                                 if (emptyBox) emptyBox.style.display = '';
                                 if (detailsBox) detailsBox.style.display = 'none';
                                 setKmcrAvailability(false);
+                                setNavAvailability(false);
                                 setStatusAvailability(false);
                                 setText('[data-active-number]', '—');
                                 setText('[data-active-patient]', '—');
@@ -3079,6 +3247,7 @@ $banner = 'Brak komunikatów';
                             if (emptyBox) emptyBox.style.display = 'none';
                             if (detailsBox) detailsBox.style.display = '';
                             setKmcrAvailability(true);
+                            setNavAvailability(true);
                             setStatusAvailability(true);
 
                             try {
@@ -3149,6 +3318,17 @@ $banner = 'Brak komunikatów';
                 try {
                     var hasOrderNow = (window.SWDTM && window.SWDTM.activeOrderId != null) ? (Number(window.SWDTM.activeOrderId) > 0) : false;
                     setKmcrAvailability(hasOrderNow);
+                    setNavAvailability(hasOrderNow);
+                    setStatusAvailability(hasOrderNow);
+                } catch (e) {}
+
+                try {
+                    if (window.Android && typeof window.Android.startLocationTracking === 'function') {
+                        var tc = (window.SWDTM && window.SWDTM.teamCode) ? String(window.SWDTM.teamCode) : '';
+                        if (tc) {
+                            window.Android.startLocationTracking(tc);
+                        }
+                    }
                 } catch (e) {}
             })();
 

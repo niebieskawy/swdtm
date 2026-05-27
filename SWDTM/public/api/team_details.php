@@ -123,7 +123,7 @@ try {
         . "WHERE assigned_team_code = :code\n"
         . "  AND status IN ('done','cancelled')\n"
         . "ORDER BY updated_at DESC, id DESC\n"
-        . "LIMIT 8"
+        . "LIMIT 5"
     );
     $stmt->execute([':code' => $teamCode]);
     $rows = $stmt->fetchAll();
