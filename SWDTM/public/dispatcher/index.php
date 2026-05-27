@@ -232,6 +232,20 @@ if (is_array($flash)) {
         .map-ctx-menu button{width:100%;display:flex;align-items:center;justify-content:flex-start;gap:10px;height:40px;border-radius:12px;border:1px solid rgba(226,232,240,.9);background:rgba(248,250,252,.92);cursor:pointer;font-weight:900}
         .map-ctx-menu button:hover{background:rgba(60,179,113,.10);border-color:rgba(60,179,113,.35)}
         .map-ctx-menu button + button{margin-top:8px}
+
+        [data-team-history] .team-row[role="button"]{cursor:pointer;transition:transform .16s ease,box-shadow .16s ease,background .16s ease}
+        [data-team-history] .team-row[role="button"]:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(2,6,23,.12)}
+        [data-team-history] .team-row[role="button"]:focus{outline:none;transform:translateY(-2px);box-shadow:0 18px 40px rgba(2,6,23,.14)}
+
+        .team-location-marker{width:36px;height:36px;border-radius:50%;background:#ffffff;border:3px solid #94a3b8;box-shadow:0 4px 12px rgba(0,0,0,.15),0 1px 4px rgba(0,0,0,.08);display:flex!important;align-items:center!important;justify-content:center!important;position:relative;transition:transform .15s ease,box-shadow .15s ease}
+        .team-location-marker:hover{transform:scale(1.12);box-shadow:0 6px 18px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.12)}
+        .team-location-marker__code{font-weight:800;font-size:11px;line-height:1;color:#1e293b;letter-spacing:.2px;text-transform:uppercase;display:block;text-align:center}
+
+        .team-location-marker--green{border-color:#22c55e}
+        .team-location-marker--yellow{border-color:#f59e0b}
+        .team-location-marker--red{border-color:#ef4444}
+        .team-location-marker--purple{border-color:#a855f7}
+        .team-location-marker--gray{border-color:#94a3b8}
     </style>
     <script defer src="<?= htmlspecialchars(url('/assets/app.js?v=' . @filemtime(__DIR__ . '/../assets/app.js')), ENT_QUOTES, 'UTF-8') ?>"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
@@ -770,7 +784,9 @@ if (is_array($flash)) {
         window.SWDTM.geocoderUrl = <?= json_encode(url('/api/photon.php'), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
         window.SWDTM.mapOrders = <?= json_encode($mapOrders, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
         window.SWDTM.activeTeamsUrl = <?= json_encode(url('/api/active_teams.php'), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+        window.SWDTM.teamLocationsUrl = <?= json_encode(url('/api/team_locations.php'), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
         window.SWDTM.teamDetailsUrl = <?= json_encode(url('/api/team_details.php'), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+        window.SWDTM.orderDetailsUrl = <?= json_encode(url('/api/order_details.php'), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
         window.SWDTM.dispatchStatusUrl = <?= json_encode(url('/api/dispatch_status.php'), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
         window.SWDTM.dispatchOrderUrl = <?= json_encode(url('/api/dispatch_order.php'), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
         window.SWDTM.cancelDispatchUrl = <?= json_encode(url('/api/cancel_dispatch.php'), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
@@ -1480,6 +1496,7 @@ if (is_array($flash)) {
                 }).addTo(map);
 
                 var orderLayer = L.layerGroup().addTo(map);
+                var teamLayer = L.layerGroup().addTo(map);
 
                 var facilityLayer = L.layerGroup().addTo(map);
                 var facilities = <?= json_encode($clientFacilities, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
@@ -1787,9 +1804,94 @@ if (is_array($flash)) {
                 window.SWDTM = window.SWDTM || {};
                 window.SWDTM.refreshMapOrders = refreshMapOrders;
 
+                function teamIcon(t) {
+                    var code = t && t.team_code != null ? String(t.team_code || '').trim() : '';
+                    var cls = 'team-location-marker team-location-marker--gray';
+
+                    var st = t && t.status_label != null ? String(t.status_label || '').trim().toLowerCase() : '';
+                    var sc = t && t.status_code != null ? String(t.status_code || '').trim().toLowerCase() : '';
+
+                    if (!st) {
+                        cls = 'team-location-marker team-location-marker--gray';
+                    } else if (st === 'gotowy w bazie' || st === 'powrót do bazy' || st === 'aktywny') {
+                        cls = 'team-location-marker team-location-marker--green';
+                    } else if (st === 'niegotowy' || st === 'przywracanie gotowości' || st === 'dezynfekcja' || st === 'mycie' || st === 'tankowanie') {
+                        cls = 'team-location-marker team-location-marker--yellow';
+                    } else if (st === 'awaria') {
+                        cls = 'team-location-marker team-location-marker--purple';
+                    } else {
+                        cls = 'team-location-marker team-location-marker--red';
+                    }
+
+                    if (sc === 'ready_base') {
+                        cls = 'team-location-marker team-location-marker--green';
+                    }
+
+                    return L.divIcon({
+                        className: cls,
+                        html: '<span class="team-location-marker__code">' + escapeHtml(code ? code : 'Z') + '</span>',
+                        iconSize: [36, 36],
+                        iconAnchor: [18, 18]
+                    });
+                }
+
+                function renderTeamLocations(teams) {
+                    if (!Array.isArray(teams)) teams = [];
+                    teamLayer.clearLayers();
+
+                    teams.forEach(function (t) {
+                        if (!t) return;
+                        var lat = typeof t.lat === 'number' ? t.lat : parseFloat(String(t.lat || ''));
+                        var lon = typeof t.lon === 'number' ? t.lon : parseFloat(String(t.lon || ''));
+                        if (!isFinite(lat) || !isFinite(lon)) return;
+
+                        var marker = L.marker([lat, lon], { icon: teamIcon(t), keyboard: false });
+                        marker.on('mouseover', function () { spiderfyNear(marker); });
+                        marker.on('click', function () {
+                            var code = String(t.team_code || '').trim();
+                            if (!code) return;
+                            if (window.SWDTM && typeof window.SWDTM.openTeamModal === 'function') {
+                                window.SWDTM.openTeamModal(code);
+                            }
+                        });
+
+                        var html = '';
+                        var codeTxt = String(t.team_code || '').trim();
+                        var st = String(t.status_label || '').trim();
+                        var upd = String(t.updated_at || '').trim();
+                        var km = (t.mileage_km_today != null && isFinite(Number(t.mileage_km_today))) ? Number(t.mileage_km_today).toFixed(2) : '';
+                        if (codeTxt) html += '<div style="font-weight:950">' + escapeHtml(codeTxt) + '</div>';
+                        if (st) html += '<div style="margin-top:4px;opacity:.9">' + escapeHtml(st) + '</div>';
+                        if (km) html += '<div style="margin-top:4px;opacity:.85">Dzisiaj: ' + escapeHtml(km) + ' km</div>';
+                        if (upd) html += '<div style="margin-top:4px;opacity:.75">' + escapeHtml(upd) + '</div>';
+                        if (html) marker.bindPopup(html);
+
+                        marker.addTo(teamLayer);
+                    });
+                }
+
+                function refreshTeamLocations() {
+                    var url = (window.SWDTM && window.SWDTM.teamLocationsUrl) ? String(window.SWDTM.teamLocationsUrl) : '';
+                    if (!url) return;
+                    fetch(url, { credentials: 'same-origin' })
+                        .then(function (r) { return r && r.ok === true ? r.json() : null; })
+                        .then(function (data) {
+                            if (!data || data.ok !== true) return;
+                            renderTeamLocations(data.teams);
+                        })
+                        .catch(function () {});
+                }
+
+                window.SWDTM.refreshTeamLocations = refreshTeamLocations;
+
                 refreshMapOrders(true);
                 setInterval(function () {
                     refreshMapOrders(false);
+                }, 3000);
+
+                refreshTeamLocations();
+                setInterval(function () {
+                    refreshTeamLocations();
                 }, 3000);
 
                 map.on('moveend zoomend', function () {
@@ -2357,6 +2459,8 @@ if (is_array($flash)) {
                                 data.history.forEach(function (o) {
                                     var row = document.createElement('div');
                                     row.className = 'team-row';
+                                    row.setAttribute('role', 'button');
+                                    row.setAttribute('tabindex', '0');
 
                                     var meta = document.createElement('div');
                                     meta.className = 'team-meta';
@@ -2374,11 +2478,79 @@ if (is_array($flash)) {
 
                                     var badge = document.createElement('div');
                                     badge.className = 'team-status';
-                                    badge.textContent = String(o.status || '—');
+                                    var hs = String(o.status || '').trim().toLowerCase();
+                                    if (!hs) {
+                                        badge.textContent = '—';
+                                    } else if (hs === 'done') {
+                                        badge.textContent = '';
+                                        badge.style.display = 'none';
+                                    } else if (hs === 'cancelled') {
+                                        badge.textContent = 'Anulowane';
+                                    } else {
+                                        badge.textContent = String(o.status || '—');
+                                    }
 
                                     row.appendChild(meta);
                                     row.appendChild(badge);
                                     hist.appendChild(row);
+
+                                    function openPreview() {
+                                        if (!window.SWDTM || typeof window.SWDTM.openOrderModal !== 'function') return;
+                                        var id = String(o && o.id != null ? o.id : '');
+                                        if (!id) return;
+
+                                        var url = window.SWDTM.orderDetailsUrl ? String(window.SWDTM.orderDetailsUrl) : '';
+                                        if (!url) return;
+
+                                        fetch(url + '?id=' + encodeURIComponent(id), { credentials: 'same-origin' })
+                                            .then(function (r) { return r && r.ok === true ? r.json() : null; })
+                                            .then(function (d) {
+                                                if (!d || d.ok !== true || !d.order) return;
+
+                                                var tmp = document.createElement('div');
+                                                tmp.setAttribute('data-order-id', String(d.order.id || ''));
+                                                tmp.setAttribute('data-order-number', String(d.order.order_number || ''));
+                                                tmp.setAttribute('data-order-status', String(d.order.status || ''));
+                                                tmp.setAttribute('data-order-urgency', String(d.order.urgency || ''));
+                                                tmp.setAttribute('data-order-type', String(d.order.order_type || ''));
+                                                tmp.setAttribute('data-order-transport', String(d.order.transport_type || ''));
+                                                tmp.setAttribute('data-order-needed-team', String(d.order.needed_team || ''));
+                                                tmp.setAttribute('data-order-sirens', String(d.order.sirens || '0'));
+                                                tmp.setAttribute('data-order-planned-at', String(d.order.planned_at || ''));
+                                                tmp.setAttribute('data-order-assigned-team', String(d.order.assigned_team_code || ''));
+
+                                                tmp.setAttribute('data-order-phone', String(d.order.phone || ''));
+
+                                                var pFull = (String(d.order.patient_first_name || '') + ' ' + String(d.order.patient_last_name || '')).trim();
+                                                tmp.setAttribute('data-order-patient', pFull);
+                                                tmp.setAttribute('data-order-patient-position', String(d.order.patient_position || ''));
+                                                tmp.setAttribute('data-order-patient-weight', d.order.patient_weight_kg != null ? String(d.order.patient_weight_kg) : '');
+
+                                                tmp.setAttribute('data-order-from', String(d.order.from || ''));
+                                                tmp.setAttribute('data-order-to', String(d.order.to || ''));
+
+                                                tmp.setAttribute('data-order-interview-oxygen', String(d.order.interview_oxygen || ''));
+                                                tmp.setAttribute('data-order-interview-conscious', String(d.order.interview_conscious || ''));
+                                                tmp.setAttribute('data-order-interview-notes', String(d.order.interview_notes || ''));
+                                                tmp.setAttribute('data-order-icd10-none', String(d.order.icd10_none != null ? d.order.icd10_none : '0'));
+                                                tmp.setAttribute('data-order-icd10-code', String(d.order.icd10_code || ''));
+                                                tmp.setAttribute('data-order-icd10-name', String(d.order.icd10_name || ''));
+                                                tmp.setAttribute('data-order-description', String(d.order.order_description || ''));
+
+                                                window.SWDTM.openOrderModal(tmp);
+                                            })
+                                            .catch(function () {});
+                                    }
+
+                                    row.addEventListener('click', function (e) {
+                                        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+                                        openPreview();
+                                    });
+                                    row.addEventListener('keydown', function (e) {
+                                        if (!e || (e.key !== 'Enter' && e.key !== ' ')) return;
+                                        e.preventDefault();
+                                        openPreview();
+                                    });
                                 });
                             }
                         }
